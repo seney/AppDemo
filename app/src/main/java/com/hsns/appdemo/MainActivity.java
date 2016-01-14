@@ -55,9 +55,9 @@ public class MainActivity extends AppCompatActivity
 
     private void initProducts() {
         mProducts.add(new Product(1 , "Coca Cola", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
-        mProducts.add(new Product(2 , "Anchor", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
-        mProducts.add(new Product(3 , "ABC", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
-        mProducts.add(new Product(4 , "Soda", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(2 , "Anchor", "http://reface.me/wp-content/uploads/default-facebook-avatar-female.gif"));
+        mProducts.add(new Product(3 , "ABC", "http://reface.me/wp-content/uploads/default-facebook-avatar-male.gif"));
+        mProducts.add(new Product(4 , "Soda", "http://dreamatico.com/data_images/girl/girl-8.jpg"));
         mProducts.add(new Product(5 , "Sting", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
     }
 

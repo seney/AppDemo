@@ -3,11 +3,7 @@ package com.hsns.appdemo;
 import android.content.Context;
 import android.database.AbstractCursor;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +12,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -26,8 +21,6 @@ public class SearchSuggestionAdapter extends CursorAdapter {
     private final String TAG = "SearchSuggestionAdapter";
     ArrayList<Product> mProducts;
     ArrayList<Product> mProducts1;
-    //    private TextView mTextView;
-//    private ImageView mImageView;
     private LayoutInflater mInflater;
     private String[] mFields = {"_id", "name"};
 
@@ -53,12 +46,7 @@ public class SearchSuggestionAdapter extends CursorAdapter {
         ViewHolder vh = (ViewHolder) view.getTag();
 
         vh.textView.setText(name);
-//        ImageLoader mImageLoader = VolleySingleton.getInstance(context).getImageLoader();
-//        mImageLoader.get(imgUrl, ImageLoader.getImageListener(vh.imageView,
-//                R.drawable.ic_menu_camera, R.drawable.ic_menu_send));
-
-//        new URLimageDownload(vh.imageView).execute(imgUrl);
-        Glide.with(context).load(imgUrl).into(vh.imageView);
+        Glide.with(context).load(imgUrl).centerCrop().into(vh.imageView);
     }
 
     @Override
@@ -141,32 +129,6 @@ public class SearchSuggestionAdapter extends CursorAdapter {
         @Override
         public boolean isNull(int column) {
             return false;
-        }
-    }
-
-    private class URLimageDownload extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageDownloadView;
-
-        public URLimageDownload(ImageView imageDownloadView) {
-            this.imageDownloadView = imageDownloadView;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap bitmapImage = null;
-
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                bitmapImage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return bitmapImage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageDownloadView.setImageBitmap(result);
         }
     }
 }
