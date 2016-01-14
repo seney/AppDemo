@@ -18,10 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
-    public static String[] columns = new String[]{"_id", "FEED_URL", "FEED_ICON", "FEED_SUBSCRIBERS", "FEED_TITLE"};
+    private ArrayList<Product> mProducts = new ArrayList<>();
+    private SearchSuggestionAdapter mSearchSuggestionAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,16 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        initProducts();
+    }
+
+    private void initProducts() {
+        mProducts.add(new Product(1 , "Coca Cola", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(2 , "Anchor", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(3 , "ABC", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(4 , "Soda", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(5 , "Sting", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
     }
 
     @Override
@@ -69,6 +81,8 @@ public class MainActivity extends AppCompatActivity
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         ComponentName componentName = new ComponentName(getApplicationContext(), SearchableActivity.class);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName));
+        mSearchSuggestionAdapter = new SearchSuggestionAdapter(this, mProducts);
+        searchView.setSuggestionsAdapter(mSearchSuggestionAdapter);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -94,7 +108,8 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onSuggestionClick(int position) {
-
+                searchView.setQuery(mProducts.get(position).getName(), false);
+                searchView.clearFocus();
                 return true;
             }
         });
