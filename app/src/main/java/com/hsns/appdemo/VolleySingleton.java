@@ -55,7 +55,8 @@ public class VolleySingleton {
         return mRequestQueue;
     }
 
-    public <T> void addToRequestQueue(Request<T> req) {
+    public <T> void addToRequestQueue(Request<T> req, String tag) {
+        req.setTag(tag);
         getRequestQueue().add(req);
     }
 

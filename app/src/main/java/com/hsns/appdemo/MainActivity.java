@@ -14,16 +14,32 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private final String TAG = "MainActivity";
     private ArrayList<Product> mProducts = new ArrayList<>();
-    private SearchSuggestionAdapter mSearchSuggestionAdapter;
+//    private SearchProductSuggestionAdapter mSearchProductSuggestionAdapter;
+    private GoogleStringSuggestionAdapter mGoogleStringSuggestionAdapter;
+    private ArrayList<String> mString = new ArrayList<>();
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +66,21 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        initProducts();
+//        initProducts();
+
+        initViews();
+    }
+
+    private void initViews() {
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
     }
 
     private void initProducts() {
-        mProducts.add(new Product(1 , "Coca Cola", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
-        mProducts.add(new Product(2 , "Anchor", "http://reface.me/wp-content/uploads/default-facebook-avatar-female.gif"));
-        mProducts.add(new Product(3 , "ABC", "http://reface.me/wp-content/uploads/default-facebook-avatar-male.gif"));
-        mProducts.add(new Product(4 , "Soda", "http://dreamatico.com/data_images/girl/girl-8.jpg"));
-        mProducts.add(new Product(5 , "Sting", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(1, "Coca Cola", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
+        mProducts.add(new Product(2, "Anchor", "http://reface.me/wp-content/uploads/default-facebook-avatar-female.gif"));
+        mProducts.add(new Product(3, "ABC", "http://reface.me/wp-content/uploads/default-facebook-avatar-male.gif"));
+        mProducts.add(new Product(4, "Soda", "http://dreamatico.com/data_images/girl/girl-8.jpg"));
+        mProducts.add(new Product(5, "Sting", "http://wiseheartdesign.com/images/articles/default-avatar.png"));
     }
 
     @Override
@@ -73,7 +95,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         final MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
@@ -81,8 +102,9 @@ public class MainActivity extends AppCompatActivity
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         ComponentName componentName = new ComponentName(getApplicationContext(), SearchableActivity.class);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName));
-        mSearchSuggestionAdapter = new SearchSuggestionAdapter(this, mProducts);
-        searchView.setSuggestionsAdapter(mSearchSuggestionAdapter);
+//        mSearchProductSuggestionAdapter = new SearchProductSuggestionAdapter(this, mProducts);
+        mGoogleStringSuggestionAdapter = new GoogleStringSuggestionAdapter(this, mString);
+        searchView.setSuggestionsAdapter(mGoogleStringSuggestionAdapter);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -93,6 +115,8 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
+
+                requestSuggestions(newText);
 
                 return true;
             }
@@ -108,24 +132,55 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onSuggestionClick(int position) {
-                searchView.setQuery(mProducts.get(position).getName(), false);
+                searchView.setQuery(mString.get(position), false);
                 searchView.clearFocus();
                 return true;
             }
         });
 
-
         return true;
+    }
+
+    private void requestSuggestions(String newText) {
+        mString.clear();
+        mProgressBar.setVisibility(View.VISIBLE);
+        String url = "http://suggestqueries.google.com/complete/search?client=chrome&q=" + newText;
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i(TAG, response);
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            jsonArray = jsonArray.getJSONArray(1);
+                            TreeSet<String> strings = new TreeSet<>();
+                            for(int i = 0; i < jsonArray.length(); i++){
+                                strings.add(jsonArray.getString(i));
+                            }
+                            mString.addAll(strings);
+                            mGoogleStringSuggestionAdapter.notifyDataSetChanged();
+                            Log.i(TAG, jsonArray.toString());
+
+                            mProgressBar.setVisibility(View.GONE);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        mProgressBar.setVisibility(View.GONE);
+                        Log.e(TAG, error.getMessage());
+                    }
+                });
+        VolleySingleton.getInstance(this).addToRequestQueue(stringRequest, "GET");
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -136,11 +191,9 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {

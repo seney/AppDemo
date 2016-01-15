@@ -10,24 +10,22 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-
 import java.util.ArrayList;
 
 /**
- * Created by seney on 1/14/16.
+ * Created by SENEY SEAN on 1/15/16.
  */
-public class SearchSuggestionAdapter extends CursorAdapter {
-    private final String TAG = "SearchSuggestionAdapter";
-    ArrayList<Product> mProducts;
-    ArrayList<Product> mProducts1;
-    private LayoutInflater mInflater;
-    private String[] mFields = {"_id", "name"};
+public class GoogleStringSuggestionAdapter extends CursorAdapter {
 
-    public SearchSuggestionAdapter(Context context, ArrayList<Product> products) {
+
+    private final String[] mFields = {"_id", "name"};
+    private final LayoutInflater mInflater;
+    private final ArrayList<String> mStrings;
+
+    public GoogleStringSuggestionAdapter(Context context, ArrayList<String> strings) {
         super(context, null, false);
         mInflater = LayoutInflater.from(context);
-        this.mProducts = this.mProducts1 = products;
+        this.mStrings = strings;
     }
 
     @Override
@@ -39,19 +37,14 @@ public class SearchSuggestionAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        Product product = mProducts.get(cursor.getPosition());
-        String name = product.getName();
-        String imgUrl = product.getImgUrl();
-
+        String string = mStrings.get(cursor.getPosition());
         ViewHolder vh = (ViewHolder) view.getTag();
-
-        vh.textView.setText(name);
-        Glide.with(context).load(imgUrl).centerCrop().into(vh.imageView);
+        vh.textView.setText(string);
     }
 
     @Override
     public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
-        return new SearchSuggestionCursor(constraint);
+        return new GoogleStringSuggestionCursor(constraint);
     }
 
     private class ViewHolder {
@@ -64,26 +57,14 @@ public class SearchSuggestionAdapter extends CursorAdapter {
         }
     }
 
-    private class SearchSuggestionCursor extends AbstractCursor {
+    private class GoogleStringSuggestionCursor extends AbstractCursor {
+        public GoogleStringSuggestionCursor(CharSequence constraint) {
 
-        public SearchSuggestionCursor(CharSequence constraint) {
-            /*mProducts = new ArrayList<>();
-            mProducts.addAll(mProducts1);
-            if (!TextUtils.isEmpty(constraint)) {
-                String constraintString = constraint.toString().toLowerCase(Locale.ROOT);
-
-                Iterator<Product> iter = mProducts.iterator();
-                while (iter.hasNext()) {
-                    if (!iter.next().getName().toLowerCase(Locale.ROOT).startsWith(constraintString)) {
-                        iter.remove();
-                    }
-                }
-            }*/
         }
 
         @Override
         public int getCount() {
-            return mProducts.size();
+            return mStrings.size();
         }
 
         @Override
@@ -94,8 +75,8 @@ public class SearchSuggestionAdapter extends CursorAdapter {
         @Override
         public String getString(int column) {
             if (column == 1)
-                return mProducts.get(mPos).getName();
-            return null;
+                return mStrings.get(mPos);
+            throw new UnsupportedOperationException("unimplemented");
         }
 
         @Override
